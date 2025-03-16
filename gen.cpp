@@ -21,6 +21,10 @@ const unsigned int amount_of_mutations_of_genom_percent = 10;
 
 double global_ratio;
 
+std::chrono::steady_clock::time_point begin0;
+const int time_duration = 360;
+
+
 struct Genom
 {
     vector <bool> B;
@@ -162,6 +166,12 @@ int epoch(vector <pair <int, int> > &a, Population &P, unsigned int max_P)
             {
                 P.add(new_Genom);
             }
+
+///--------------------------------------------------------------------------------------------------------------time
+            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+            //cout << std::chrono::duration_cast<std::chrono::seconds>(end - begin0).count() << endl;
+            if (std::chrono::duration_cast<std::chrono::seconds>(end - begin0).count() > time_duration) return -1;
+///--------------------------------------------------------------------------------------------------------------time
         }
     }
 //    for (int i = 0; i < P.size(); i++)
@@ -187,7 +197,7 @@ int epoch(vector <pair <int, int> > &a, Population &P, unsigned int max_P)
     return value;
 }
 
-int main()
+int code(basic_ifstream<char, char_traits<char>> &in)
 {
     std::srand(std::time({})); // use current time as seed for random generator
     const int random_value = std::rand();
@@ -201,7 +211,6 @@ int main()
 //    return 0;
 
     W = 0;
-    ifstream in("data/ks_1000_0");
 
     int n, w;
     vector <pair <int, int> > a;
@@ -249,6 +258,11 @@ int main()
 
     while(flag < 2)
     {
+///--------------------------------------------------------------------------------------------------------------time
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        //cout << std::chrono::duration_cast<std::chrono::seconds>(end - begin0).count() << endl;
+        if (std::chrono::duration_cast<std::chrono::seconds>(end - begin0).count() > time_duration) return new_value;
+///--------------------------------------------------------------------------------------------------------------time
         new_value = epoch(a, P, max_P);
 //        cout << new_value << endl;
 //        for (int i = 0; i < max_P; i++)
@@ -266,7 +280,37 @@ int main()
         prev_value = new_value;
     }
 
-    cout << new_value << endl;
+//    cout << new_value << endl;
 
-    return 0;
+    return new_value;
+}
+
+int main()
+{
+//    ifstream in("data/ks_4_0");
+
+    vector <string> data;
+
+    std::string path = "data/"; // ѕуть к папке
+    for (auto& entry : directory_iterator(path))
+    {
+        std::string path_string{entry.path().u8string()};
+        cout << path_string.size() << " ";
+        //if (path_string.size() > 13) continue;
+        data.push_back(path_string);
+    }
+    cout << endl;
+
+    std::ofstream out("table.txt", std::ios::app);
+
+    for (int i = 0; i < data.size(); i++)
+    {
+        cout << data[i] << " -- ";
+        ifstream in(data[i]);
+        begin0 = std::chrono::steady_clock::now();
+        int value = code(in);
+        cout << "Answer: " << value << endl;
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        out << data[i] << "   " << value << "       " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin0).count() << endl;
+    }
 }
